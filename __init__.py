@@ -49,13 +49,13 @@ def commits():
     results = []
     for commit in json_content:
         try:
-            date_str = commit['commit']['author']['date']
+            date_str = commit['commit']['author']['date']  # récupère la date
             date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
             results.append({'minute': date_obj.minute})
         except (KeyError, TypeError, ValueError):
             continue  
-
     return jsonify({'results': results})
+
 
 
 @app.route('/commits-graph/')
