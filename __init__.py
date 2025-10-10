@@ -39,8 +39,12 @@ def mon_histogramme():
 @app.route('/commits/')
 def commits():
     url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits'
+    token = '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'
+    req = Request(url)
+    req.add_header('Authorization', f'token {token}')
+
     try:
-        response = urlopen(url)
+        response = urlopen(req)
         raw_content = response.read()
         json_content = json.loads(raw_content.decode('utf-8'))
     except Exception as e:
@@ -49,11 +53,12 @@ def commits():
     results = []
     for commit in json_content:
         try:
-            date_str = commit['commit']['author']['date']  # récupère la date
+            date_str = commit['commit']['author']['date']
             date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
             results.append({'minute': date_obj.minute})
         except (KeyError, TypeError, ValueError):
-            continue  
+            continue
+
     return jsonify({'results': results})
 
 
