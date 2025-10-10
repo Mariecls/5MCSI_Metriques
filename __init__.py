@@ -59,46 +59,34 @@ def histogramme():
 cached_commits = None
 last_fetch = 0
 
-@app.route("/commits/")
-def commits():
-    global cached_commits, last_fetch
-    # Utiliser le cache pendant 1 heure
-    if cached_commits and (time.time() - last_fetch < 3600):
-        return jsonify(cached_commits)
-
+@app.route('/commits-data/')
+def commits_data():
+    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits?per_page=20'
     try:
-        url = "https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits"
-
-        # Ajout d’un User-Agent pour éviter les erreurs 403 de GitHub
-        req = Request(url, headers={'User-Agent': 'AlwaysData-Flask-App'})
-        response = urlopen(req)
-        raw_data = response.read()
-        commits_json = json.loads(raw_data.decode("utf-8"))
-
-        results = []
-        for commit in commits_json:
-            commit_data = commit.get("commit", {}).get("author", {})
-            date_str = commit_data.get("date")
-            if date_str:
-                date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
-                results.append({
-                    "date": date_obj.strftime("%Y-%m-%d %H:%M"),
-                    "minute": date_obj.minute
-                })
-
-        cached_commits = {"results": results}
-        last_fetch = time.time()
-        return jsonify(cached_commits)
-
+        response = urlopen(url)
+        raw = response.read()
+        commits = json.loads(raw.decode("utf-8"))
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': 'Erreur lors de la récupération des commits', 'details': str(e)}), 503
 
+    minutes_list = []
+    for commit in commits:
+        date_string = commit.get('commit', {}).get('author', {}).get('date')
+        if date_string:
+            try:
+                date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+                minutes_list.append(date_object.minute)
+            except Exception:
+                continue
+    minutes_count = Counter(minutes_list)
+    results = [{'minute': m, 'count': minutes_count.get(m, 0)} for m in range(60)]
+    return jsonify(results=results)
 # ----------------------------
 # Page graphique des commits
 # ----------------------------
-@app.route("/commits-graph/")
-def commits_graph():
-    return render_template("commits.html")
+@app.route('/commits/')
+def commits():
+    return render_template('commits.html')
 
 # ----------------------------
 # Pour Alwaysdata
