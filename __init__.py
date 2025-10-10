@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from urllib.request import urlopen
 import json
+from datetime import datetime  
 
 app = Flask(__name__)
 
@@ -30,9 +31,11 @@ def meteo():
 @app.route("/rapport/")
 def mongraphique():
     return render_template("graphique.html")
+
 @app.route("/histogramme/")
 def mon_histogramme():
     return render_template("histogramme.html")
+
 @app.route('/commits/')
 def commits():
     url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
@@ -47,11 +50,10 @@ def commits():
         results.append({'minute': date_obj.minute})
     
     return jsonify(results=results)
+
 @app.route('/commits-graph/')
 def commits_graph():
     return render_template('commits.html')
-if __name__ == "__main__":
-    app.run(debug=True)
 
 if __name__ == "__main__":
     app.run(debug=True)
