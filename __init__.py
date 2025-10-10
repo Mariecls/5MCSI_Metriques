@@ -60,9 +60,7 @@ cached_commits = None
 last_fetch = 0
 
 @app.route('/commits-data/')
-def commits_data():
-    url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits?per_page=20'
-   req = Request(api_url, headers={"User-Agent": "metrics-app"})
+req = Request(api_url, headers={"User-Agent": "metrics-app"})
     with urlopen(req) as resp:
         raw = resp.read()
     payload = json.loads(raw.decode("utf-8"))
@@ -82,6 +80,7 @@ def commits_data():
 
     results = [{'minute': i, 'count': minute_counts[i]} for i in range(60)]
     return jsonify(results=results)
+
 # ----------------------------
 # Page graphique des commits
 # ----------------------------
