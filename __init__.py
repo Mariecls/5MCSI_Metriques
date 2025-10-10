@@ -47,7 +47,9 @@ def commits():
         results.append({'minute': date_obj.minute})
     
     return jsonify(results=results)
-
+@app.route('/commits-graph/')
+def commits_graph():
+    return render_template('commits.html')
 if __name__ == "__main__":
     app.run(debug=True)
 
