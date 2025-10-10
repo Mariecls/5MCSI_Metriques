@@ -38,17 +38,19 @@ def mon_histogramme():
 
 @app.route('/commits/')
 def commits():
+    from urllib.error import HTTPError
     url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits'
-    token = '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'
+    token = 'TON_TOKEN_ICI'
     req = Request(url)
     req.add_header('Authorization', f'token {token}')
-
     try:
         response = urlopen(req)
         raw_content = response.read()
         json_content = json.loads(raw_content.decode('utf-8'))
+    except HTTPError as e:
+        return jsonify({'error': f'HTTP Error {e.code}', 'details': e.reason})
     except Exception as e:
-        return jsonify({'error': 'Impossible de récupérer les commits', 'details': str(e)}), 500
+        return jsonify({'error': 'Autre erreur', 'details': str(e)})
 
     results = []
     for commit in json_content:
@@ -56,10 +58,11 @@ def commits():
             date_str = commit['commit']['author']['date']
             date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
             results.append({'minute': date_obj.minute})
-        except (KeyError, TypeError, ValueError):
+        except Exception:
             continue
 
     return jsonify({'results': results})
+
 
 
 
