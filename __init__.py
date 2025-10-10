@@ -60,26 +60,45 @@ cached_commits = None
 last_fetch = 0
 
 @app.route('/commits-data/')
-req = Request(api_url, headers={"User-Agent": "metrics-app"})
-    with urlopen(req) as resp:
-        raw = resp.read()
-    payload = json.loads(raw.decode("utf-8"))
+def commits_data():
+    url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits?per_page=20'
+    global cached_commits, last_fetch
 
-    minute_counts = [0] * 60
-    for item in payload:
-        commit_info = item.get('commit', {})
-        author_info = commit_info.get('author', {})
-        date_str = author_info.get('date')  # ex: "2024-02-11T11:57:27Z"
-        if not date_str:
-            continue
+    # Si cache récent (<1h), on le renvoie
+    if cached_commits and (time.time() - last_fetch < 3600):
+        return jsonify(cached_commits)
+
+    try:
+        # Lecture du fichier local comme fallback pour ne pas dépasser la limite
+        with open('commits_local.json', 'r') as f:
+            commits = json.load(f)
+    except FileNotFoundError:
+        # Si fichier local absent, on essaye GitHub (risque de 403)
         try:
-            d = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
-            minute_counts[d.minute] += 1
-        except Exception:
-            continue
+            response = urlopen(url)
+            raw = response.read()
+            commits = json.loads(raw.decode("utf-8"))
+        except Exception as e:
+            return jsonify({'error': 'Erreur lors de la récupération des commits', 'details': str(e)}), 503
 
-    results = [{'minute': i, 'count': minute_counts[i]} for i in range(60)]
-    return jsonify(results=results)
+    # Transformation en minutes
+    minutes_list = []
+    for commit in commits:
+        date_string = commit.get('commit', {}).get('author', {}).get('date')
+        if date_string:
+            try:
+                date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+                minutes_list.append(date_object.minute)
+            except Exception:
+                continue
+
+    minutes_count = Counter(minutes_list)
+    results = [{'minute': m, 'count': minutes_count.get(m, 0)} for m in range(60)]
+
+    cached_commits = {"results": results}
+    last_fetch = time.time()
+
+    return jsonify(cached_commits)
 
 # ----------------------------
 # Page graphique des commits
