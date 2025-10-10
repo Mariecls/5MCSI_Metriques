@@ -2,17 +2,28 @@ from flask import Flask, render_template, jsonify
 from urllib.request import urlopen
 import json
 from datetime import datetime
+import time
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
+# ----------------------------
+# Page d'accueil
+# ----------------------------
 @app.route('/')
 def hello_world():
     return render_template('hello.html')
 
+# ----------------------------
+# Page contact
+# ----------------------------
 @app.route('/contact/')
 def contact():
     return render_template("contact.html")
+
+# ----------------------------
+# API météo Tawarano
+# ----------------------------
 @app.route('/tawarano/')
 def meteo():
     url = 'https://samples.openweathermap.org/data/2.5/forecast?lat=0&lon=0&appid=xxx'
@@ -28,15 +39,33 @@ def meteo():
 
     return jsonify(results=results)
 
+# ----------------------------
+# Page graphique
+# ----------------------------
 @app.route("/rapport/")
 def mongraphique():
     return render_template("graphique.html")
 
+# ----------------------------
+# Page histogramme
+# ----------------------------
 @app.route("/histogramme/")
 def histogramme():
     return render_template("histogramme.html")
+
+# ----------------------------
+# API commits GitHub avec cache
+# ----------------------------
+cached_commits = None
+last_fetch = 0
+
 @app.route("/commits/")
 def commits():
+    global cached_commits, last_fetch
+    # Utiliser le cache pendant 1 heure
+    if cached_commits and (time.time() - last_fetch < 3600):
+        return jsonify(cached_commits)
+
     try:
         url = "https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits"
         response = urlopen(url)
@@ -54,10 +83,16 @@ def commits():
                     "minute": date_obj.minute
                 })
 
-        return jsonify(results=results)
+        cached_commits = {"results": results}
+        last_fetch = time.time()
+        return jsonify(cached_commits)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ----------------------------
+# Page graphique des commits
+# ----------------------------
 @app.route("/commits-graph/")
 def commits_graph():
     return render_template("commits.html")
@@ -66,3 +101,6 @@ def commits_graph():
 # Pour Alwaysdata
 # ----------------------------
 application = app
+
+if __name__ == "__main__":
+    app.run(debug=True)
