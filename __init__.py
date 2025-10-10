@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 import json
 from datetime import datetime
 import time
@@ -54,7 +54,7 @@ def histogramme():
     return render_template("histogramme.html")
 
 # ----------------------------
-# API commits GitHub avec cache
+# API commits GitHub avec cache + User-Agent
 # ----------------------------
 cached_commits = None
 last_fetch = 0
@@ -68,7 +68,10 @@ def commits():
 
     try:
         url = "https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits"
-        response = urlopen(url)
+
+        # Ajout d’un User-Agent pour éviter les erreurs 403 de GitHub
+        req = Request(url, headers={'User-Agent': 'AlwaysData-Flask-App'})
+        response = urlopen(req)
         raw_data = response.read()
         commits_json = json.loads(raw_data.decode("utf-8"))
 
