@@ -52,10 +52,11 @@ def commits():
             date_str = commit['commit']['author']['date']
             date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
             results.append({'minute': date_obj.minute})
-        except Exception:
-            continue
+        except (KeyError, TypeError, ValueError):
+            continue  
 
-    return jsonify(results=results)
+    return jsonify({'results': results})
+
 
 @app.route('/commits-graph/')
 def commits_graph():
