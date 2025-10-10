@@ -61,7 +61,7 @@ last_fetch = 0
 
 @app.route('/commits-data/')
 def commits_data():
-    url = 'https://github.com/Mariecls/5MCSI_Metriques/commits?per_page=20'
+    url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits?per_page=20'
     try:
         response = urlopen(url)
         raw = response.read()
