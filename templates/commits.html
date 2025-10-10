@@ -15,12 +15,12 @@
         min-height: 100vh;
         margin: 0;
         color: #fff;
+        text-align: center;
       }
 
       h1 {
-        font-size: 2.2em;
-        margin-bottom: 20px;
-        text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+        font-size: 2em;
+        margin-bottom: 15px;
       }
 
       #chart_container {
@@ -38,7 +38,81 @@
         height: 500px;
       }
 
+      #error_message {
+        font-size: 1.2em;
+        color: #fff;
+        margin-top: 20px;
+        background: rgba(0,0,0,0.3);
+        padding: 10px 20px;
+        border-radius: 10px;
+      }
+
       footer {
         margin-top: 25px;
-        font-size: 0
+        font-size: 0.9em;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📊 Commits minute par minute</h1>
+    <div id="chart_container">
+      <div id="chart_div"></div>
+    </div>
+    <div id="error_message" style="display:none;"></div>
 
+    <footer>
+      <p>© 2025 - Données issues de GitHub</p>
+    </footer>
+
+    <script>
+      google.charts.load('current', {packages: ['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        fetch('/commits/')
+          .then(response => response.json())
+          .then(data => {
+            if (data.error) {
+              document.getElementById('error_message').style.display = 'block';
+              document.getElementById('error_message').textContent =
+                "⚠️ Erreur : " + data.error;
+              return;
+            }
+
+            let minutesCount = {};
+            data.results.forEach(c => {
+              let m = c.minute;
+              minutesCount[m] = (minutesCount[m] || 0) + 1;
+            });
+
+            let dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('number', 'Minute');
+            dataTable.addColumn('number', 'Commits');
+
+            for (let m = 0; m < 60; m++) {
+              dataTable.addRow([m, minutesCount[m] || 0]);
+            }
+
+            let options = {
+              title: 'Répartition des commits par minute',
+              titleTextStyle: { color: '#fff', fontSize: 18 },
+              legend: { position: 'none' },
+              backgroundColor: 'transparent',
+              hAxis: { title: 'Minute', textStyle: { color: '#fff' }, titleTextStyle: { color: '#fff' } },
+              vAxis: { title: 'Nombre de commits', textStyle: { color: '#fff' }, titleTextStyle: { color: '#fff' } },
+              colors: ['#ffeaa7'],
+            };
+
+            let chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+            chart.draw(dataTable, options);
+          })
+          .catch(err => {
+            document.getElementById('error_message').style.display = 'block';
+            document.getElementById('error_message').textContent =
+              "🚨 Une erreur est survenue : " + err.message;
+          });
+      }
+    </script>
+  </body>
+</html>
