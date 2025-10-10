@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Contacte-moi</title>
+  <title>Contactez-moi - Marie Ucles</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
     body {
@@ -11,16 +11,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
     }
-    .contact-form {
+    .contact-container {
       background-color: #fff;
       padding: 40px;
       border-radius: 12px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
       width: 100%;
-      max-width: 450px;
+      max-width: 500px;
     }
     h2 {
       text-align: center;
@@ -65,24 +65,44 @@
     button:hover {
       background-color: #6a11cb;
     }
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #777;
+    }
     @media (max-width: 500px) {
-      .contact-form {
+      .contact-container {
         padding: 30px 20px;
       }
     }
   </style>
 </head>
 <body>
-  <form class="contact-form">
-    <h2>Contactez-moi</h2>
-    <div class="form-group">
-      <label for="prenom">Prénom</label>
-      <input type="text" id="prenom" name="prenom" placeholder="Votre prénom">
-    </div>
-    <div class="form-group">
-      <label for="nom">Nom</label>
-      <input type="text" id="nom" name="nom" placeholder="Votre nom">
-    </div>
-    <div class="form-group">
-      <label for="
-
+  <div class="contact-container">
+    <h2>Contactez Marie Ucles</h2>
+    <form action="#" method="post">
+      <div class="form-group">
+        <label for="prenom">Prénom</label>
+        <input type="text" id="prenom" name="prenom" placeholder="Votre prénom" required>
+      </div>
+      <div class="form-group">
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" name="nom" placeholder="Votre nom" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Votre email" required>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="5" placeholder="Votre message" required></textarea>
+      </div>
+      <button type="submit">Valider</button>
+    </form>
+    <footer>
+      &copy; 2025 Marie Ucles
+    </footer>
+  </div>
+</body>
+</html>
