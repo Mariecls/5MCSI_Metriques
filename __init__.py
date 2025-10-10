@@ -38,17 +38,23 @@ def mon_histogramme():
 
 @app.route('/commits/')
 def commits():
-    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
-    response = urlopen(url)
-    raw_content = response.read()
-    json_content = json.loads(raw_content.decode('utf-8'))
+    url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits'
+    try:
+        response = urlopen(url)
+        raw_content = response.read()
+        json_content = json.loads(raw_content.decode('utf-8'))
+    except Exception as e:
+        return jsonify({'error': 'Impossible de récupérer les commits', 'details': str(e)}), 500
 
     results = []
     for commit in json_content:
-        date_str = commit['commit']['author']['date']
-        date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
-        results.append({'minute': date_obj.minute})
-    
+        try:
+            date_str = commit['commit']['author']['date']
+            date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
+            results.append({'minute': date_obj.minute})
+        except Exception:
+            continue
+
     return jsonify(results=results)
 
 @app.route('/commits-graph/')
