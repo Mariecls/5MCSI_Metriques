@@ -76,31 +76,30 @@ def mongraphique():
 def mon_histogramme():
     return render_template("histogramme.html")
 
-@app.route('/commits/')
+@app.route("/commits/")
 def commits():
-    url = 'https://api.github.com/repos/Mariecls/5MCSI_Metriques/commits'
-    token = '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' 
-    req = Request(url)
-    req.add_header('Authorization', f'token {token}')
     try:
-        response = urlopen(req)
-        raw_content = response.read()
-        json_content = json.loads(raw_content.decode('utf-8'))
-    except HTTPError as e:
-        return jsonify({'error': f'HTTP Error {e.code}', 'details': e.reason}), 500
+        url = "https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits"
+        response = urlopen(url)
+        raw_data = response.read()
+        commits_json = json.loads(raw_data.decode("utf-8"))
+
+        results = []
+        for commit in commits_json:
+            commit_data = commit.get("commit", {}).get("author", {})
+            date_str = commit_data.get("date")
+            if date_str:
+                date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+                results.append({
+                    "date": date_obj.strftime("%Y-%m-%d %H:%M"),
+                    "minute": date_obj.minute
+                })
+
+        return jsonify(results=results)
+
     except Exception as e:
-        return jsonify({'error': 'Autre erreur', 'details': str(e)}), 500
-
-    results = []
-    for commit in json_content:
-        try:
-            date_str = commit['commit']['author']['date']
-            date_obj = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
-            results.append({'minute': date_obj.minute})
-        except Exception as e:
-            return jsonify({'error': 'Erreur parsing date', 'details': str(e)}), 500
-
-    return jsonify({'results': results})
+        # Retourne une erreur claire côté front si le chargement échoue
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/commits-graph/')
 def commits_graph():
